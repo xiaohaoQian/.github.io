@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Qian的博客</title>
+  
+  <subtitle>心灵激情不在，就可能被打败</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2020-03-16T10:36:17.654Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>钱晓豪</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Python语法学习项目</title>
+    <link href="http://yoursite.com/2020/03/16/Python%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0%E9%A1%B9%E7%9B%AE/"/>
+    <id>http://yoursite.com/2020/03/16/Python语法学习项目/</id>
+    <published>2020-03-16T09:27:00.000Z</published>
+    <updated>2020-03-16T10:36:17.654Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;学习完python后，网上找的程序源码，当做语法学习完成后的总结，包括 &lt;code&gt;Python基本语法&lt;/code&gt; 、 &lt;code&gt;模块&lt;/code&gt; 、&lt;code&gt;面向对象&lt;/code&gt;&lt;/p&gt;&lt;h1 id=&quot;项目&quot;&gt;&lt;a href=&quot;#项目&quot; class=&quot;headerlink&quot; title=&quot;项目&quot;&gt;&lt;/a&gt;项目&lt;/h1&gt;&lt;h2 id=&quot;功能&quot;&gt;&lt;a href=&quot;#功能&quot; class=&quot;headerlink&quot; title=&quot;功能&quot;&gt;&lt;/a&gt;功能&lt;/h2&gt;&lt;p&gt;1、一个玩家控制的飞机并发射子弹、若干台敌机以及滚动的背景&lt;br&gt;2、玩家控制飞机左右移动，子弹自动发射&lt;br&gt;3、子弹碰到敌机子弹和敌机消失，玩家控制的飞机碰到敌机游戏自动退出&lt;/p&gt;&lt;h2 id=&quot;类中的静态方法&quot;&gt;&lt;a href=&quot;#类中的静态方法&quot; class=&quot;headerlink&quot; title=&quot;类中的静态方法&quot;&gt;&lt;/a&gt;类中的静态方法&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;情况：没使用类或对象的属性或方法&lt;/li&gt;
+&lt;li&gt;方法：@staticmethod&lt;/li&gt;
+&lt;li&gt;调用：类名.方法&lt;/li&gt;
+&lt;li&gt;理解:单例模式&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+    
+      <category term="Python" scheme="http://yoursite.com/categories/Python/"/>
+    
+      <category term="项目源码" scheme="http://yoursite.com/categories/Python/%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81/"/>
+    
+    
+      <category term="Python" scheme="http://yoursite.com/tags/Python/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>LwIP的TCP实现之一</title>
+    <link href="http://yoursite.com/2019/11/06/20191106-LwIP%E7%9A%84TCP%E5%AE%9E%E7%8E%B0%E4%B9%8B%E8%BF%9E%E6%8E%A5%E4%B8%8E%E6%96%AD%E5%BC%80/"/>
+    <id>http://yoursite.com/2019/11/06/20191106-LwIP的TCP实现之连接与断开/</id>
+    <published>2019-11-06T08:10:00.000Z</published>
+    <updated>2020-03-16T10:42:19.281Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文介绍&lt;code&gt;tcp_new&lt;/code&gt; &lt;code&gt;tcp_bind&lt;/code&gt; &lt;code&gt;tcp_listen&lt;/code&gt;函数的实现&lt;/p&gt;&lt;h1 id=&quot;LwIP介绍&quot;&gt;&lt;a href=&quot;#LwIP介绍&quot; class=&quot;headerlink&quot; title=&quot;LwIP介绍&quot;&gt;&lt;/a&gt;LwIP介绍&lt;/h1&gt;&lt;h2 id=&quot;目的&quot;&gt;&lt;a href=&quot;#目的&quot; class=&quot;headerlink&quot; title=&quot;目的&quot;&gt;&lt;/a&gt;目的&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;LwIP 是 TCP/IP 协议栈的一个实现，它的目的是减少内存使用率和代码大小，使 LwIP 适用于资源受限系统（比如嵌入式系统）。&lt;/p&gt;
+&lt;/blockquote&gt;&lt;h2 id=&quot;区别&quot;&gt;&lt;a href=&quot;#区别&quot; class=&quot;headerlink&quot; title=&quot;区别&quot;&gt;&lt;/a&gt;区别&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;大部分的 TCP/IP 实现在应用层和底层协议层之间进行了严格的划分。在大部分的操作系统中，底层协议族作为拥有应用层进程通讯入口的操作系统内核的一部分被实现，当应用层发送数据，在被网络代码处理之前，这些数据必须由应用层进程的内存空间复制到内部缓冲区。&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    </summary>
+    
+    
+      <category term="TCP/IP" scheme="http://yoursite.com/categories/TCP-IP/"/>
+    
+      <category term="LwIP" scheme="http://yoursite.com/categories/TCP-IP/LwIP/"/>
+    
+    
+      <category term="TCP/IP" scheme="http://yoursite.com/tags/TCP-IP/"/>
+    
+      <category term="LwIP" scheme="http://yoursite.com/tags/LwIP/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Markdown 高级语法</title>
+    <link href="http://yoursite.com/2019/11/05/20191105Markdown-%E9%AB%98%E7%BA%A7%E8%AF%AD%E6%B3%95/"/>
+    <id>http://yoursite.com/2019/11/05/20191105Markdown-高级语法/</id>
+    <published>2019-11-05T09:00:00.000Z</published>
+    <updated>2020-03-16T10:42:02.152Z</updated>
+    
+    <summary type="html">
+    
+      &lt;h4 id=&quot;HTML元素&quot;&gt;&lt;a href=&quot;#HTML元素&quot; class=&quot;headerlink&quot; title=&quot;HTML元素&quot;&gt;&lt;/a&gt;HTML元素&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;语法：&lt;/strong&gt;不在 Markdown 涵盖范围之内的标签，都可以直接在文档里面用 HTML 撰写.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;范围：&lt;/strong&gt;&lt;code&gt;&amp;lt;kbd&amp;gt;&lt;/code&gt; &lt;code&gt;&amp;lt;b&amp;gt;&lt;/code&gt; &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; &lt;code&gt;&amp;lt;em&amp;gt;&lt;/code&gt; &lt;code&gt;&amp;lt;sup&amp;gt;&lt;/code&gt; &lt;code&gt;&amp;lt;sub&amp;gt;&lt;/code&gt; &lt;code&gt;&amp;lt;br&amp;gt;&lt;/code&gt;等 .&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;使用 &amp;lt;kbd&amp;gt;Ctrl&amp;lt;/kbd&amp;gt;+&amp;lt;kbd&amp;gt;Alt&amp;lt;/kbd&amp;gt;+&amp;lt;kbd&amp;gt;Del&amp;lt;/kbd&amp;gt; 重启电脑&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;效果：&lt;/strong&gt;&lt;br&gt;&lt;img src=&quot;/images/posts/20191105Markdown/html.jpg&quot; alt=&quot;HTML元素&quot; title=&quot;HTML元素&quot;&gt;&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+    
+      <category term="markdown" scheme="http://yoursite.com/categories/markdown/"/>
+    
+      <category term="基本语法" scheme="http://yoursite.com/categories/markdown/%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/"/>
+    
+    
+      <category term="markdown" scheme="http://yoursite.com/tags/markdown/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Markdown 语法</title>
+    <link href="http://yoursite.com/2019/11/05/Markdown-%E8%AF%AD%E6%B3%95/"/>
+    <id>http://yoursite.com/2019/11/05/Markdown-语法/</id>
+    <published>2019-11-05T02:28:00.000Z</published>
+    <updated>2020-03-16T10:43:40.259Z</updated>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本文总结了Markdown的常用语法。&lt;br&gt;Markdown 是一种轻量级标记语言，采用纯文本格式编写文档，文档后缀为 .md, .markdown。&lt;br&gt;Markdown 编写的文档可以导出 HTML 、Word、图像、PDF、Epub 等多种格式的文档。&lt;/p&gt;
+&lt;hr&gt;
+    
+    </summary>
+    
+    
+      <category term="markdown" scheme="http://yoursite.com/categories/markdown/"/>
+    
+      <category term="基本语法" scheme="http://yoursite.com/categories/markdown/%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/"/>
+    
+    
+      <category term="markdown" scheme="http://yoursite.com/tags/markdown/"/>
+    
+  </entry>
+  
+</feed>

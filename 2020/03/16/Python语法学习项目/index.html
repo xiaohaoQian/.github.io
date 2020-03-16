@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Qian的博客" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="学习完python后，网上找的程序源码，当做语法学习完成后的总结，包括 Python基本语法 、 模块 、面向对象项目功能1、一个玩家控制的飞机并发射子弹、若干台敌机以及滚动的背景2、玩家控制飞机左右移动，子弹自动发射3、子弹碰到敌机子弹和敌机消失，玩家控制的飞机碰到敌机游戏自动退出类中的静态方法 情况：没使用类或对象的属性或方法 方法：@staticmethod 调用：类名.方法 理解:单例模式">
+<meta name="keywords" content="Python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python语法学习项目">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;16&#x2F;Python%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0%E9%A1%B9%E7%9B%AE&#x2F;index.html">
+<meta property="og:site_name" content="Qian的博客">
+<meta property="og:description" content="学习完python后，网上找的程序源码，当做语法学习完成后的总结，包括 Python基本语法 、 模块 、面向对象项目功能1、一个玩家控制的飞机并发射子弹、若干台敌机以及滚动的背景2、玩家控制飞机左右移动，子弹自动发射3、子弹碰到敌机子弹和敌机消失，玩家控制的飞机碰到敌机游戏自动退出类中的静态方法 情况：没使用类或对象的属性或方法 方法：@staticmethod 调用：类名.方法 理解:单例模式">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2020-03-16T10:36:17.654Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/03/16/Python%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0%E9%A1%B9%E7%9B%AE/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Python语法学习项目 | Qian的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Qian的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">心灵激情不在，就可能被打败</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/16/Python%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0%E9%A1%B9%E7%9B%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="钱晓豪">
+      <meta itemprop="description" content="这是一枚xx想要坚持下去的博客<br>邮箱：1510879435@qq.com">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Qian的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python语法学习项目
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-03-16 17:27:00 / 修改时间：18:36:17" itemprop="dateCreated datePublished" datetime="2020-03-16T17:27:00+08:00">2020-03-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/" itemprop="url" rel="index">
+                    <span itemprop="name">Python</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Python/%E9%A1%B9%E7%9B%AE%E6%BA%90%E7%A0%81/" itemprop="url" rel="index">
+                    <span itemprop="name">项目源码</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>学习完python后，网上找的程序源码，当做语法学习完成后的总结，包括 <code>Python基本语法</code> 、 <code>模块</code> 、<code>面向对象</code></p><h1 id="项目"><a href="#项目" class="headerlink" title="项目"></a>项目</h1><h2 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h2><p>1、一个玩家控制的飞机并发射子弹、若干台敌机以及滚动的背景<br>2、玩家控制飞机左右移动，子弹自动发射<br>3、子弹碰到敌机子弹和敌机消失，玩家控制的飞机碰到敌机游戏自动退出</p><h2 id="类中的静态方法"><a href="#类中的静态方法" class="headerlink" title="类中的静态方法"></a>类中的静态方法</h2><ul>
+<li>情况：没使用类或对象的属性或方法</li>
+<li>方法：@staticmethod</li>
+<li>调用：类名.方法</li>
+<li>理解:单例模式</li>
+</ul><a id="more"></a>
+
+
+<h2 id="项目源码"><a href="#项目源码" class="headerlink" title="项目源码"></a>项目源码</h2><p><strong>plane_main.py</strong> 源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">import pygame</span><br><span class="line">from plane_sprites import *</span><br><span class="line">#主窗体大小</span><br><span class="line">SCREEN_RECT = pygame.Rect(0,0,480,700)</span><br><span class="line">#主窗体刷新速度</span><br><span class="line">FRAME_PER_SEC = 60</span><br><span class="line">#创建事件</span><br><span class="line">CREATE_ENEMY_EVENT = pygame.USEREVENT</span><br><span class="line">HERO_FIRE_EVENT = pygame.USEREVENT + 1</span><br><span class="line"></span><br><span class="line">class PlaneGame(object):</span><br><span class="line">	  #初始化函数</span><br><span class="line">    def __init__(self):</span><br><span class="line">    	  #创建主窗体</span><br><span class="line">        self.screen = pygame.display.set_mode(SCREEN_RECT.size)</span><br><span class="line">        #创建定时器</span><br><span class="line">        self.clock = pygame.time.Clock()</span><br><span class="line">        #创建对象</span><br><span class="line">        self.__create_sprites()</span><br><span class="line">        #定时器定时发送事件消息</span><br><span class="line">        pygame.time.set_timer(CREATE_ENEMY_EVENT, 1000)</span><br><span class="line">        pygame.time.set_timer(HERO_FIRE_EVENT, 500)</span><br><span class="line"></span><br><span class="line">    def __create_sprites(self):</span><br><span class="line">    	  #精灵组类操作，相同类型的对象放在一起，只调用一个函数，减小代码量</span><br><span class="line">        #背景对象，两个背景是为了实现无缝滚动，一个背景会出现空白背景</span><br><span class="line">        bg1 = Background()</span><br><span class="line">        bg2 = Background(True)</span><br><span class="line">        self.back_group = pygame.sprite.Group(bg1,bg2)</span><br><span class="line">        #敌机对象，若干个，在之后添加</span><br><span class="line">        self.enemy_group = pygame.sprite.Group()</span><br><span class="line">        #玩家控制的飞机对象</span><br><span class="line">        self.hero = Hero()</span><br><span class="line">        self.hero_group = pygame.sprite.Group(self.hero)</span><br><span class="line"></span><br><span class="line">    def start_game(self):</span><br><span class="line">    	  #主循环，保证主窗体可以一直运行</span><br><span class="line">        while True:</span><br><span class="line">        	  #设置时长，保证while巡检1s执行FRAME_PER_SEC次</span><br><span class="line">            self.clock.tick(FRAME_PER_SEC)</span><br><span class="line">            #监听主窗体消息</span><br><span class="line">            self.__event_handle()</span><br><span class="line">            #碰撞检测，调用接口，几个对象坐标重合时的处理</span><br><span class="line">            self.__check_collide()</span><br><span class="line">            #设置对象坐标位置</span><br><span class="line">            self.__update_sprites()</span><br><span class="line">            #重绘主窗体</span><br><span class="line">            pygame.display.update()</span><br><span class="line"></span><br><span class="line">    def __event_handle(self):</span><br><span class="line">        for event in pygame.event.get():</span><br><span class="line">        	  #点击窗体关闭按钮</span><br><span class="line">            if event.type == pygame.QUIT:</span><br><span class="line">                PlaneGame.__game_over()</span><br><span class="line">            #定时器定时发送</span><br><span class="line">            elif event.type == CREATE_ENEMY_EVENT:</span><br><span class="line">                enemy = Enemy()</span><br><span class="line">                self.enemy_group.add(enemy)</span><br><span class="line">            elif event.type == HERO_FIRE_EVENT:</span><br><span class="line">                self.hero.fire()</span><br><span class="line">        #每个消息判断是不是左右按键，控制飞机左右移动</span><br><span class="line">        keys_pressed = pygame.key.get_pressed()</span><br><span class="line">        if keys_pressed[pygame.K_RIGHT]:</span><br><span class="line">            self.hero.speed = 1</span><br><span class="line">        elif keys_pressed[pygame.K_LEFT]:</span><br><span class="line">            self.hero.speed = -1</span><br><span class="line">        else:</span><br><span class="line">            self.hero.speed = 0</span><br><span class="line"></span><br><span class="line">    def __check_collide(self):</span><br><span class="line">   		  #调用接口</span><br><span class="line">        pygame.sprite.groupcollide(self.hero.bullets, self.enemy_group, True, True)</span><br><span class="line">        enemies = pygame.sprite.spritecollide(self.hero, self.enemy_group, True)</span><br><span class="line">        if len(enemies) &gt; 0:</span><br><span class="line">            self.hero.kill()</span><br><span class="line">            PlaneGame.__game_over()</span><br><span class="line"></span><br><span class="line">    def __update_sprites(self):</span><br><span class="line">        self.back_group.update()</span><br><span class="line">        self.back_group.draw(self.screen)</span><br><span class="line">        self.enemy_group.update()</span><br><span class="line">        self.enemy_group.draw(self.screen)</span><br><span class="line">        self.hero_group.update()</span><br><span class="line">        self.hero_group.draw(self.screen)</span><br><span class="line">        self.hero.bullets.update()</span><br><span class="line">        self.hero.bullets.draw(self.screen)</span><br><span class="line"></span><br><span class="line">    @staticmethod</span><br><span class="line">    def __game_over():</span><br><span class="line">        print(&quot;游戏结束&quot;)</span><br><span class="line">        pygame.quit()</span><br><span class="line">        exit()</span><br><span class="line">#主函数，这样写可以被其他模块当成函数调用</span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    game = PlaneGame()</span><br><span class="line">    game.start_game()</span><br></pre></td></tr></table></figure>
+<p><strong>plane_sprites.py</strong> 源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">import random</span><br><span class="line"></span><br><span class="line">import pygame</span><br><span class="line">from plane_main import SCREEN_RECT</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class GameSprite (pygame.sprite.Sprite):</span><br><span class="line">    def __init__(self, image_name, speed=1 ):</span><br><span class="line">        #子类初始化函数需要先执行父类的初始化函数</span><br><span class="line">        super().__init__()</span><br><span class="line">        self.image = pygame.image.load(image_name)</span><br><span class="line">        self.rect = self.image.get_rect()</span><br><span class="line">        self.speed = speed</span><br><span class="line"></span><br><span class="line">    def update(self):</span><br><span class="line">    	  #更改图片坐标</span><br><span class="line">        self.rect.y += self.speed</span><br><span class="line"></span><br><span class="line">class Background(GameSprite):</span><br><span class="line">    def __init__(self, is_alt = False):</span><br><span class="line">        super().__init__(&quot;./images/background.png&quot;)</span><br><span class="line">        #两个背景对象放在不同的位置，已达到无缝循环</span><br><span class="line">        if is_alt:</span><br><span class="line">            self.rect.y = -self.rect.height</span><br><span class="line">    def update(self):</span><br><span class="line">        super().update()</span><br><span class="line">        #图像向下移动</span><br><span class="line">        if self.rect.y &gt;= SCREEN_RECT.height :</span><br><span class="line">            self.rect.y = -self.rect.height</span><br><span class="line">class Enemy(GameSprite):</span><br><span class="line">    def __init__(self):</span><br><span class="line">        super().__init__(&quot;./images/enemy1.png&quot;)</span><br><span class="line">        #敌机速度随机</span><br><span class="line">        self.speed = random.randint(1,3)</span><br><span class="line">        self.rect.bottom = 0</span><br><span class="line">        max_x = SCREEN_RECT.width - self.rect.width</span><br><span class="line">        self.rect.x = random.randint(0,max_x)</span><br><span class="line"></span><br><span class="line">    def update(self):</span><br><span class="line">        super().update()</span><br><span class="line">        #敌机飞出主窗体，释放对象</span><br><span class="line">        if self.rect.y &gt;= SCREEN_RECT.height:</span><br><span class="line">            self.kill()</span><br><span class="line"></span><br><span class="line">    def __del__(self):</span><br><span class="line">       pass</span><br><span class="line"></span><br><span class="line">class Hero(GameSprite):</span><br><span class="line">    def __init__(self):</span><br><span class="line">        super().__init__(&quot;./images/me1.png&quot;, 0)</span><br><span class="line">        self.rect.centerx = SCREEN_RECT.centerx</span><br><span class="line">        self.rect.bottom = SCREEN_RECT.bottom - 120</span><br><span class="line">        #创建子弹对象</span><br><span class="line">        self.bullets = pygame.sprite.Group()</span><br><span class="line"></span><br><span class="line">    def update(self):</span><br><span class="line">        self.rect.x += self.speed</span><br><span class="line">        if self.rect.x &lt; 0:</span><br><span class="line">            self.rect.x = 0</span><br><span class="line">        elif self.rect.right &gt; SCREEN_RECT.right:</span><br><span class="line">            self.rect.right = SCREEN_RECT.right</span><br><span class="line"></span><br><span class="line">    def fire(self):</span><br><span class="line">    	  # 三发子弹</span><br><span class="line">        for i in (0, 1, 2):</span><br><span class="line">            bullet = Bullet()</span><br><span class="line">            #子弹的横坐标相同，纵坐标相差20</span><br><span class="line">            bullet.rect.bottom = self.rect.y - i * 20</span><br><span class="line">            bullet.rect.centerx = self.rect.centerx</span><br><span class="line">            self.bullets.add(bullet)</span><br><span class="line"></span><br><span class="line">class Bullet(GameSprite):</span><br><span class="line">    def __init__(self):</span><br><span class="line">       super().__init__(&quot;./images/bullet1.png&quot;, -2)</span><br><span class="line"></span><br><span class="line">    def update(self):</span><br><span class="line">        super().update()</span><br><span class="line">        #子弹飞出主窗体，释放对象</span><br><span class="line">        if self.rect.bottom &lt; 0:</span><br><span class="line">            self.kill()</span><br><span class="line"></span><br><span class="line">    def __del__(self):</span><br><span class="line">        pass</span><br></pre></td></tr></table></figure>
+<p><strong>代码逻辑:</strong></p>
+<ul>
+<li>初始函数<ul>
+<li>创建主窗体</li>
+<li>创建对象 </li>
+</ul>
+</li>
+<li>开始函数<ul>
+<li>循环</li>
+<li>监听、碰撞检测、更新位置、刷新</li>
+</ul>
+</li>
+<li>对象初始函数<ul>
+<li>加载图片、初始速度、初始位置</li>
+</ul>
+</li>
+<li>对象更新函数：<ul>
+<li>移动位置、边界限定</li>
+</ul>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过这个项目觉得python难点在于</p>
+<ul>
+<li>对于类对象和实例对象的理解</li>
+<li>程序运行环境的理解：命名空间和作用域</li>
+<li>类的属性的定义方式</li>
+</ul>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p> 基本语法学习结束，准备学习java的web技术，之后学习python的web技术</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python/" rel="tag"># Python</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/11/06/20191106-LwIP%E7%9A%84TCP%E5%AE%9E%E7%8E%B0%E4%B9%8B%E8%BF%9E%E6%8E%A5%E4%B8%8E%E6%96%AD%E5%BC%80/" rel="next" title="LwIP的TCP实现之一">
+                  <i class="fa fa-chevron-left"></i> LwIP的TCP实现之一
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#项目"><span class="nav-number">1.</span> <span class="nav-text">项目</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#功能"><span class="nav-number">1.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类中的静态方法"><span class="nav-number">1.2.</span> <span class="nav-text">类中的静态方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#项目源码"><span class="nav-number">1.3.</span> <span class="nav-text">项目源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">1.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结语"><span class="nav-number">2.</span> <span class="nav-text">结语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="钱晓豪"
+    src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">钱晓豪</p>
+  <div class="site-description" itemprop="description">这是一枚xx想要坚持下去的博客<br>邮箱：1510879435@qq.com</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiaohaoQian" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;xiaohaoQian" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钱晓豪</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'f7154f4c860569b0c350',
+      clientSecret: '0f911ab3cb89d8eda9872e94b3b3eac15ebe94f7',
+      repo: 'xiaohaoQian.github.io',
+      owner: 'xiaohaoQian',
+      admin: ['xiaohaoQian'],
+      id: 'a0c018f95123b867063ee7bfff34ca2b',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>

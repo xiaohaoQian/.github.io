@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="Qian的博客" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="本文介绍tcp_new tcp_bind tcp_listen函数的实现LwIP介绍目的 LwIP 是 TCP&#x2F;IP 协议栈的一个实现，它的目的是减少内存使用率和代码大小，使 LwIP 适用于资源受限系统（比如嵌入式系统）。 区别 大部分的 TCP&#x2F;IP 实现在应用层和底层协议层之间进行了严格的划分。在大部分的操作系统中，底层协议族作为拥有应用层进程通讯入口的操作系统内核的一部分被实现，当应用层发">
+<meta name="keywords" content="TCP&#x2F;IP,LwIP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LwIP的TCP实现之一">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;06&#x2F;20191106-LwIP%E7%9A%84TCP%E5%AE%9E%E7%8E%B0%E4%B9%8B%E8%BF%9E%E6%8E%A5%E4%B8%8E%E6%96%AD%E5%BC%80&#x2F;index.html">
+<meta property="og:site_name" content="Qian的博客">
+<meta property="og:description" content="本文介绍tcp_new tcp_bind tcp_listen函数的实现LwIP介绍目的 LwIP 是 TCP&#x2F;IP 协议栈的一个实现，它的目的是减少内存使用率和代码大小，使 LwIP 适用于资源受限系统（比如嵌入式系统）。 区别 大部分的 TCP&#x2F;IP 实现在应用层和底层协议层之间进行了严格的划分。在大部分的操作系统中，底层协议族作为拥有应用层进程通讯入口的操作系统内核的一部分被实现，当应用层发">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;images&#x2F;posts&#x2F;20191106LwIP_TCP&#x2F;tcp_status.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;images&#x2F;posts&#x2F;20191106LwIP_TCP&#x2F;connect_discon.jpg">
+<meta property="og:updated_time" content="2020-03-16T10:42:19.281Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;images&#x2F;posts&#x2F;20191106LwIP_TCP&#x2F;tcp_status.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/11/06/20191106-LwIP%E7%9A%84TCP%E5%AE%9E%E7%8E%B0%E4%B9%8B%E8%BF%9E%E6%8E%A5%E4%B8%8E%E6%96%AD%E5%BC%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LwIP的TCP实现之一 | Qian的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Qian的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">心灵激情不在，就可能被打败</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/06/20191106-LwIP%E7%9A%84TCP%E5%AE%9E%E7%8E%B0%E4%B9%8B%E8%BF%9E%E6%8E%A5%E4%B8%8E%E6%96%AD%E5%BC%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="钱晓豪">
+      <meta itemprop="description" content="这是一枚xx想要坚持下去的博客<br>邮箱：1510879435@qq.com">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Qian的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LwIP的TCP实现之一
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-06 16:10:00" itemprop="dateCreated datePublished" datetime="2019-11-06T16:10:00+08:00">2019-11-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-03-16 18:42:19" itemprop="dateModified" datetime="2020-03-16T18:42:19+08:00">2020-03-16</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/TCP-IP/" itemprop="url" rel="index">
+                    <span itemprop="name">TCP/IP</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/TCP-IP/LwIP/" itemprop="url" rel="index">
+                    <span itemprop="name">LwIP</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文介绍<code>tcp_new</code> <code>tcp_bind</code> <code>tcp_listen</code>函数的实现</p><h1 id="LwIP介绍"><a href="#LwIP介绍" class="headerlink" title="LwIP介绍"></a>LwIP介绍</h1><h2 id="目的"><a href="#目的" class="headerlink" title="目的"></a>目的</h2><blockquote>
+<p>LwIP 是 TCP/IP 协议栈的一个实现，它的目的是减少内存使用率和代码大小，使 LwIP 适用于资源受限系统（比如嵌入式系统）。</p>
+</blockquote><h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><blockquote>
+<p>大部分的 TCP/IP 实现在应用层和底层协议层之间进行了严格的划分。在大部分的操作系统中，底层协议族作为拥有应用层进程通讯入口的操作系统内核的一部分被实现，当应用层发送数据，在被网络代码处理之前，这些数据必须由应用层进程的内存空间复制到内部缓冲区。</p>
+</blockquote><a id="more"></a>
+
+
+<p><strong>例如：</strong>BSD Socket需要将发送的数据从应用程序复制TCP/IP协议栈的内部缓存区。</p>
+<p>当应用层能够了解底层协议使用的缓冲处理机制时，便可以更加有效的重复使用缓冲区。因此应用层与TCP/IP协议代码使用相同的内存区时，应用层就可以直接读写内部缓冲区，从而避免了内存复制产生的性能损失。LwIP则采用了后面这种方式。</p>
+<blockquote>
+<p>为了减少处理和内存需求， LwIP 使用不需要任何数据复制的经过裁剪的 API。</p>
+</blockquote>
+<h1 id="TCP功能"><a href="#TCP功能" class="headerlink" title="TCP功能"></a>TCP功能</h1><ul>
+<li>建立与断开</li>
+<li>状态机</li>
+<li>输入输出函数</li>
+<li>滑动窗口</li>
+<li>超时与重传</li>
+<li>慢启动与拥塞避免</li>
+<li>快速恢复、重传</li>
+<li>Nagle算法</li>
+<li>TCP定时器</li>
+</ul>
+<h1 id="tcp-new"><a href="#tcp-new" class="headerlink" title="tcp_new"></a>tcp_new</h1><h2 id="函数功能"><a href="#函数功能" class="headerlink" title="函数功能"></a>函数功能</h2><p>创建一个新的连接标识符（PCB）。 如果没有可用的内存来创建新的pcb，则返回NULL。</p>
+<h2 id="函数源码"><a href="#函数源码" class="headerlink" title="函数源码"></a>函数源码</h2><p>tcp_new源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct tcp_pcb *tcp_new(void)</span><br><span class="line">&#123;</span><br><span class="line">  return tcp_alloc(TCP_PRIO_NORMAL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面函数的返回值为<code>tcp_pcb</code>结构体，该结构体保存一些实现TCP功能的变量，先不详细讨论。下面看下tcp_alloc函数，从名称可以看出该函数是分配TCP结构体的内存。在分析该函数之前，先了解一下LwIP内存分配的两种方式。</p>
+<h2 id="tcp-alloc"><a href="#tcp-alloc" class="headerlink" title="tcp_alloc"></a>tcp_alloc</h2><h3 id="函数功能-1"><a href="#函数功能-1" class="headerlink" title="函数功能"></a>函数功能</h3><ul>
+<li><p><strong>内存堆分配方式</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mem_malloc(memp_t type)</span><br></pre></td></tr></table></figure>
+<p>动态内存堆分配策略原理就是在一个事先定义好大小的内存块中进行分配，其内存分配的策略是采用最快合适（ First Fit）方式。mem_init( ) 内存堆的初始化函数，主要是告知内存堆的起止地址，以及初始化空闲列表，由 lwip 初始化时自己调用，该接口为内部私有接口，不对用户层开放。mem_malloc( ) 申请分配内存。</p>
+</li>
+<li><p><strong>内存池分配方式</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">memp_malloc(memp_t type)</span><br></pre></td></tr></table></figure>
+<p>编译的时候与各种类型内存池就会被建立，采用链表方式。</p>
+</li>
+</ul>
+<h3 id="函数源码-1"><a href="#函数源码-1" class="headerlink" title="函数源码"></a>函数源码</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">struct tcp_pcb *</span><br><span class="line">tcp_alloc(u8_t prio)</span><br><span class="line">&#123;</span><br><span class="line">  struct tcp_pcb *pcb;</span><br><span class="line">  u32_t iss;</span><br><span class="line">  </span><br><span class="line">  pcb = (struct tcp_pcb *)memp_malloc(MEMP_TCP_PCB);</span><br><span class="line">  if (pcb == NULL) &#123;</span><br><span class="line">   /* 若内存空间不够，则函数会释放处于 TIME-WAIT 状态的 TCP */</span><br><span class="line">    LWIP_DEBUGF(TCP_DEBUG, (&quot;tcp_alloc: killing off oldest TIME-WAIT connection\n&quot;));</span><br><span class="line">    tcp_kill_timewait();</span><br><span class="line">    /* 重新分配tcp_pcb */</span><br><span class="line">    pcb = (struct tcp_pcb *)memp_malloc(MEMP_TCP_PCB);</span><br><span class="line">    if (pcb == NULL) &#123;</span><br><span class="line">      /* 若内存空间不够，则函数会释放优先级更低的 PCB（在 PCB 控制块的 prio 字段）. */</span><br><span class="line">      LWIP_DEBUGF(TCP_DEBUG, (&quot;tcp_alloc: killing connection with prio lower than %d\n&quot;, prio));</span><br><span class="line">      tcp_kill_prio(prio);</span><br><span class="line">      pcb = (struct tcp_pcb *)memp_malloc(MEMP_TCP_PCB);</span><br><span class="line">      if (pcb != NULL) &#123;</span><br><span class="line">        /* 调整错误状态：memp_malloc两次失败 */</span><br><span class="line">        MEMP_STATS_DEC(err, MEMP_TCP_PCB);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    if (pcb != NULL) &#123;</span><br><span class="line">      /* 调整错误状态：timewait PCB已释放 */</span><br><span class="line">      MEMP_STATS_DEC(err, MEMP_TCP_PCB);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  if (pcb != NULL) &#123;</span><br><span class="line">   /*tcp_pcb结构体信息 */</span><br><span class="line">    memset(pcb, 0, sizeof(struct tcp_pcb));</span><br><span class="line">    pcb-&gt;prio = prio;// 设置 PCB 的优先级为64，优先级在 1~127 之间</span><br><span class="line">    pcb-&gt;snd_buf = TCP_SND_BUF;//TCP 发送数据缓冲区剩余大小</span><br><span class="line">    pcb-&gt;snd_queuelen = 0;//发送缓冲中的数据包 pbuf 个数</span><br><span class="line">    pcb-&gt;rcv_wnd = TCP_WND;//接收窗口大小</span><br><span class="line">    pcb-&gt;rcv_ann_wnd = TCP_WND;//通告窗口大小</span><br><span class="line">    pcb-&gt;tos = 0;//IP 报头部 TOS 字段</span><br><span class="line">    pcb-&gt;ttl = TCP_TTL;//IP 报头部 TTL字段</span><br><span class="line">    pcb-&gt;mss = (TCP_MSS &gt; 536) ? 536 : TCP_MSS;// 设置最大段大小，不能超过 536 字节（貌似只是初始化）</span><br><span class="line">    pcb-&gt;rto = 3000 / TCP_SLOW_INTERVAL;//初始超时时间值，为 6s</span><br><span class="line">    pcb-&gt;sa = 0;//估计出的 RTT 平均值</span><br><span class="line">    pcb-&gt;sv = 3000 / TCP_SLOW_INTERVAL;//估计出的 RTT 方差</span><br><span class="line">    pcb-&gt;rtime = -1;//重传定时器，当该值大于 rto 时则重传发生</span><br><span class="line">    pcb-&gt;cwnd = 1;// 阻塞窗口</span><br><span class="line">    iss = tcp_next_iss();//iss 为一个临时变量，保存该连接的初始数据序列号</span><br><span class="line">    pcb-&gt;snd_wl2 = iss;//上一个窗口更新时收到的ACK序列号</span><br><span class="line">    pcb-&gt;snd_nxt = iss;//下一个将要发送的序列编号</span><br><span class="line">    pcb-&gt;lastack = iss;//上一个 ACK 编号</span><br><span class="line">    pcb-&gt;snd_lbb = iss;//发送队列中最后一个字节的序号   </span><br><span class="line">    pcb-&gt;tmr = tcp_ticks;//tcp_ticks 是一个全局变量，记录了当前协议时钟滴答</span><br><span class="line">    pcb-&gt;last_timer = tcp_timer_ctr;</span><br><span class="line">    pcb-&gt;polltmr = 0;</span><br><span class="line"></span><br><span class="line">#if LWIP_CALLBACK_API</span><br><span class="line">    pcb-&gt;recv = tcp_recv_null;//注册默认的接收回调函数</span><br><span class="line">#endif /* LWIP_CALLBACK_API */  </span><br><span class="line"></span><br><span class="line">#if 1</span><br><span class="line">    /* 初始化保活计时器 */</span><br><span class="line">    pcb-&gt;keep_idle  = TCP_KEEPIDLE_DEFAULT;//发送KEEPALIVE之前的空闲时间</span><br><span class="line">    /* 开启保活机制 */</span><br><span class="line">    pcb-&gt;so_options |= SOF_KEEPALIVE;//Socket选项</span><br><span class="line">#if LWIP_TCP_KEEPALIVE</span><br><span class="line">    pcb-&gt;keep_intvl = TCP_KEEPINTVL_DEFAULT;//保活时间间隔</span><br><span class="line">    pcb-&gt;keep_cnt   = TCP_KEEPCNT_DEFAULT;//每次保活报文个数</span><br><span class="line">#endif /* LWIP_TCP_KEEPALIVE */</span><br><span class="line">#endif</span><br><span class="line">    pcb-&gt;keep_cnt_sent = 0;//已经发送的保活报文个数</span><br><span class="line">  &#125;</span><br><span class="line">  return pcb;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>定时器介绍：</strong>LWIP 中包括两个定时器函数：一个函数每 250 ms 调用一次(快速定时器)；另一个函数每 500ms 调用一次(慢速定时器)。通过这两个函数实现TCP模块的7个定时器，重传定时器使用 rtime 字段计数，持续定时器使用 persist_cnt 字段计数，其他五个定时器除延迟 ACK 定时器外都使用 rtime 字段计数，延迟 ACK 定时器使用系统 250ms 周期性定时来完成的。上述中，<code>pcb-&gt;rto = 3000 / TCP_SLOW_INTERVAL;</code>即<code>3000 / 500 = 6</code>（也不太明白为什么是6s而不是3s，可能还会有处理）。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>tcp_new()</code>调用<code>tcp_alloc()</code>函数，该函数首先为新的PCB分配内存空间，若内存空间不够，则会释放处于TIME-WAIT状态的PCB或者优先级更低PCB,并为新的PCB分配空间。当内存空间成功分配后，函数会初始化新的PCB的内容。</p>
+<h1 id="tcp-bind"><a href="#tcp-bind" class="headerlink" title="tcp_bind"></a>tcp_bind</h1><h2 id="函数功能-2"><a href="#函数功能-2" class="headerlink" title="函数功能"></a>函数功能</h2><p>将PCB绑定到本地IP地址和端口号。IP地址可以指定为IP_ADDR_ANY以便将连接绑定到所有本地IP地址。如果将另一个连接绑定到同一端口，则该函数将返回ERR_USE，否则返回ERR_OK。</p>
+<h2 id="函数源码-2"><a href="#函数源码-2" class="headerlink" title="函数源码"></a>函数源码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">err_t tcp_bind(struct tcp_pcb *pcb, ip_addr_t *ipaddr, u16_t port)</span><br><span class="line">&#123;</span><br><span class="line">  int i;</span><br><span class="line">  int max_pcb_list = NUM_TCP_PCB_LISTS;</span><br><span class="line">  struct tcp_pcb *cpcb;</span><br><span class="line"></span><br><span class="line">  LWIP_ERROR(&quot;tcp_bind: can bind in state CLOSED&quot;, pcb-&gt;state == CLOSED, return ERR_VAL);</span><br><span class="line"></span><br><span class="line">#if SO_REUSE</span><br><span class="line">  /* 除非设置了REUSEADDR标志，否则我们还必须检查处于TIME-WAIT状态的pcb。我们不转储TIME_WAIT pcb；它们仍然可以通过使用本地和远程IP地址和端口来区分的传入数据包进行匹配。*/</span><br><span class="line">  if (ip_get_option(pcb, SOF_REUSEADDR)) &#123; //pcb-&gt;so_options字段的值</span><br><span class="line">    max_pcb_list = NUM_TCP_PCB_LISTS_NO_TIME_WAIT;</span><br><span class="line">  &#125;</span><br><span class="line">#endif /* SO_REUSE */</span><br><span class="line"></span><br><span class="line">  if (port == 0) &#123;</span><br><span class="line">    port = tcp_new_port();//分配新的端口号</span><br><span class="line">    if (port == 0) &#123;</span><br><span class="line">      return ERR_BUF;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  /* 检查链表IP地址和端口号是否已经被使用 */</span><br><span class="line">  for (i = 0; i &lt; max_pcb_list; i++) &#123;</span><br><span class="line">    for(cpcb = *tcp_pcb_lists[i]; cpcb != NULL; cpcb = cpcb-&gt;next) &#123;</span><br><span class="line">      if (cpcb-&gt;local_port == port) &#123;</span><br><span class="line">#if SO_REUSE</span><br><span class="line">        / *如果两个PCB都设置了REUSEADDR，则忽略检查端口 * / </span><br><span class="line">        if (!ip_get_option(pcb, SOF_REUSEADDR) ||</span><br><span class="line">            !ip_get_option(cpcb, SOF_REUSEADDR))</span><br><span class="line">#endif </span><br><span class="line">        &#123;</span><br><span class="line">          if (ip_addr_isany(&amp;(cpcb-&gt;local_ip)) ||</span><br><span class="line">              ip_addr_isany(ipaddr) ||</span><br><span class="line">              ip_addr_cmp(&amp;(cpcb-&gt;local_ip), ipaddr)) &#123;</span><br><span class="line">            return ERR_USE;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  if (!ip_addr_isany(ipaddr)) &#123;</span><br><span class="line">    pcb-&gt;local_ip = *ipaddr;</span><br><span class="line">  &#125;</span><br><span class="line">  pcb-&gt;local_port = port;</span><br><span class="line">  TCP_REG(&amp;tcp_bound_pcbs, pcb);</span><br><span class="line">  LWIP_DEBUGF(TCP_DEBUG, (&quot;tcp_bind: bind to port %&quot;U16_F&quot;\n&quot;, port));</span><br><span class="line">  return ERR_OK;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>链表类型：</strong>处于侦听状态的链表<code>tcp_listen_pcbs</code>；处于稳定状态的链表 <code>tcp_active_pcbs</code>；已经绑定完毕的 PCB 链表<code>tcp_bound_pcbs</code>；处于 TIME-WAIT 状态的 PCB 链表<code>tcp_tw_pcbs</code>。</p>
+<h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><p><code>tcp_bind()</code>函数将两个参数的值赋值给PCB中local_ip和local_port 的字段。但这里有个前提，就是这个&lt;IP 地址、端口&gt;对没有被使用，因此函数需要先遍历各个PCB链表，以保证这个&lt;IP 地址、端口&gt;对没有被其他PCB使用。</p>
+<h1 id="TCP的状态机"><a href="#TCP的状态机" class="headerlink" title="TCP的状态机"></a>TCP的状态机</h1><p><img src="/images/posts/20191106LwIP_TCP/tcp_status.png" alt="TCP状态机" title="TCP状态机"></p>
+<table>
+<thead>
+<tr>
+<th align="center">状态</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">CLOSED</td>
+<td align="center">关闭状态，没有连接活动或正在进行</td>
+</tr>
+<tr>
+<td align="center">LISTEN</td>
+<td align="center">监听状态，服务器正在等待连接进入</td>
+</tr>
+<tr>
+<td align="center">SYN RCVD</td>
+<td align="center">收到一个连接请求，尚未确认</td>
+</tr>
+<tr>
+<td align="center">SYN SENT</td>
+<td align="center">经发出连接请求，等待确认</td>
+</tr>
+<tr>
+<td align="center">ESTABLISHED</td>
+<td align="center">连接建立，正常数据传输状态</td>
+</tr>
+<tr>
+<td align="center">FIN WAIT 1</td>
+<td align="center">（主动关闭）已经发送关闭请求，等待确认</td>
+</tr>
+<tr>
+<td align="center">FIN WAIT 2</td>
+<td align="center">（主动关闭）收到对方关闭确认，等待对方关闭请求</td>
+</tr>
+<tr>
+<td align="center">TIMED WAIT</td>
+<td align="center">完成双向关闭，等待所有分组死掉</td>
+</tr>
+<tr>
+<td align="center">CLOSING</td>
+<td align="center">双方同时尝试关闭，等待对方确认</td>
+</tr>
+<tr>
+<td align="center">CLOSE WAIT</td>
+<td align="center">（被动关闭）收到对方关闭请求，已经确认</td>
+</tr>
+<tr>
+<td align="center">LAST ACK</td>
+<td align="center">（被动关闭）等待最后一个关闭确认，并等待所有分组死掉</td>
+</tr>
+</tbody></table>
+<p>这个就不多做解释了，网上许多博客都有，这里只是记录方便以后查阅。博客地址：<a href="https://blog.csdn.net/wuji0447/article/details/78356875" target="_blank" rel="noopener">tcp状态介绍最详细–没有之一</a></p>
+<h2 id="TCP连接与断开状态"><a href="#TCP连接与断开状态" class="headerlink" title="TCP连接与断开状态"></a>TCP连接与断开状态</h2><p><img src="/images/posts/20191106LwIP_TCP/connect_discon.jpg" alt="TCP连接与断开" title="TCP连接与断开"><br>客户端的状态正常流程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLOSED-&gt;SYN_SENT-&gt;ESTABLISHED-&gt;FIN_WAIT_1-&gt;FIN_WAIT_2-&gt;TIME_WAIT-&gt;CLOSED</span><br></pre></td></tr></table></figure>
+<p>服务器的状态正常流程：</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLOSED-&gt;LISTEN-&gt;SYN_RCVD-&gt;ESTABLISHED-&gt;CLOSE_WAIT-&gt;LAST_ACK-&gt;CLOSED</span><br></pre></td></tr></table></figure>
+<h2 id="TCP其他状态迁移"><a href="#TCP其他状态迁移" class="headerlink" title="TCP其他状态迁移"></a>TCP其他状态迁移</h2><ul>
+<li>LISTEN-&gt;SYN_SENT，服务器打开连接。</li>
+<li>SYN_SENT-&gt;SYN_RCVD，服务器和客户端在SYN_SENT状态下如果收到SYN数据报，则都需要发送SYN的ACK数据报并把自己的状态调整到SYN收到状态，准备进入ESTABLISHED</li>
+<li>SYN_SENT-&gt;CLOSED，在发送超时的情况下，会返回到CLOSED状态。</li>
+<li>SYN_RCVD-&gt;LISTEN，如果受到RST包，会返回到LISTEN状态。</li>
+<li>SYN_RCVD-&gt;FIN_WAIT_1，这个迁移是说，可以不用到ESTABLISHED状态，而可以直接跳转到FIN_WAIT_1状态并等待关闭。</li>
+</ul>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p>上面一共说了四种 PCB 链表，现在看看它们各自用来链接了处于哪种状态的 PCB 控制块。 tcp_bound_pcbs 链表用来连接新创建的控制块，可以认为新建的控制块处于 closed 状态。tcp_listen_pcbs 链表用来连接处于 LISTEN 状态的控制块， tcp_tw_pcbs 链表用来连接处于TIME_WAIT 状态的控制块，tcp_active_pcbs 链表用来连接处于 TCP 状态转换图中其他所有状态的控制块。</p>
+<h1 id="tcp-listen"><a href="#tcp-listen" class="headerlink" title="tcp_listen"></a>tcp_listen</h1><h2 id="函数功能-3"><a href="#函数功能-3" class="headerlink" title="函数功能"></a>函数功能</h2><p>命令PCB开始监听客户端的连接。当一个客户端连接被接受时，<code>tcp_accept()</code>函数将被调用。PCB必须使用<code>tcp_bind()</code>函数绑定到本地端口。<code>tcp_listen()</code>函数返回一个新的连接标识符，并且作为参数传递给函数的那个PCB将被释放。这么做的原因是监听连接需要更少的内存，因此<code>tcp_listen()</code>将回收原始连接所需的内存并分配一个用于侦听连接的新的较小的内存块。如果没有可用的内存，<code>tcp_listen()</code>会返回NULL。如果是这样，则传递给<code>tcp_listen()</code>作为参数的PCB对象将不会被释放。</p>
+<h2 id="函数源码-3"><a href="#函数源码-3" class="headerlink" title="函数源码"></a>函数源码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">#define  tcp_listen(pcb) tcp_listen_with_backlog(pcb,TCP_DEFAULT_LISTEN_BACKLOG)</span><br><span class="line"></span><br><span class="line">struct tcp_pcb *tcp_listen_with_backlog(struct tcp_pcb *pcb, u8_t backlog)</span><br><span class="line">&#123;</span><br><span class="line">  struct tcp_pcb_listen *lpcb;</span><br><span class="line"></span><br><span class="line">  LWIP_UNUSED_ARG(backlog);</span><br><span class="line">  LWIP_ERROR(&quot;tcp_listen: pcb already connected&quot;, pcb-&gt;state == CLOSED, return NULL);</span><br><span class="line"></span><br><span class="line">  /* 是否已经监听 */</span><br><span class="line">  if (pcb-&gt;state == LISTEN) &#123;</span><br><span class="line">    return pcb;</span><br><span class="line">  &#125;</span><br><span class="line">#if SO_REUSE</span><br><span class="line">  if (ip_get_option(pcb, SOF_REUSEADDR)) &#123;</span><br><span class="line">    /* 由于SOF_REUSEADDR允许重新使用本地地址，因此我们必须确保此端口对于每个本地IP仅使用一次 */</span><br><span class="line">    for(lpcb = tcp_listen_pcbs.listen_pcbs; lpcb != NULL; lpcb = lpcb-&gt;next) &#123;</span><br><span class="line">      if (lpcb-&gt;local_port == pcb-&gt;local_port) &#123;</span><br><span class="line">        if (ip_addr_cmp(&amp;lpcb-&gt;local_ip, &amp;pcb-&gt;local_ip)) &#123;</span><br><span class="line">          /* this address/port is already used */</span><br><span class="line">          return NULL;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">#endif /* SO_REUSE */</span><br><span class="line">	/* 使用内存池分配内存 */</span><br><span class="line">  lpcb = (struct tcp_pcb_listen *)memp_malloc(MEMP_TCP_PCB_LISTEN);</span><br><span class="line">  if (lpcb == NULL) &#123;</span><br><span class="line">    return NULL;</span><br><span class="line">  &#125;</span><br><span class="line">  lpcb-&gt;callback_arg = pcb-&gt;callback_arg;//传递给回调函数的参数</span><br><span class="line">  lpcb-&gt;local_port = pcb-&gt;local_port;</span><br><span class="line">  lpcb-&gt;state = LISTEN;</span><br><span class="line">  lpcb-&gt;prio = pcb-&gt;prio;</span><br><span class="line">  lpcb-&gt;so_options = pcb-&gt;so_options;</span><br><span class="line">  ip_set_option(lpcb, SOF_ACCEPTCONN);//修改pcb-&gt;so_options的值</span><br><span class="line">  lpcb-&gt;ttl = pcb-&gt;ttl;</span><br><span class="line">  lpcb-&gt;tos = pcb-&gt;tos;</span><br><span class="line">  ip_addr_copy(lpcb-&gt;local_ip, pcb-&gt;local_ip);</span><br><span class="line">  if (pcb-&gt;local_port != 0) &#123;</span><br><span class="line">    TCP_RMV(&amp;tcp_bound_pcbs, pcb);//删除tcp_bound_pcbs链表上的节点</span><br><span class="line">  &#125;</span><br><span class="line">  memp_free(MEMP_TCP_PCB, pcb);</span><br><span class="line">#if LWIP_CALLBACK_API</span><br><span class="line">  lpcb-&gt;accept = tcp_accept_null;</span><br><span class="line">#endif /* LWIP_CALLBACK_API */</span><br><span class="line">#if TCP_LISTEN_BACKLOG //控制同时建立的连接请求数量(包括未完成和已完成的)</span><br><span class="line">  lpcb-&gt;accepts_pending = 0;</span><br><span class="line">  lpcb-&gt;backlog = (backlog ? backlog : 1);</span><br><span class="line">#endif /* TCP_LISTEN_BACKLOG */</span><br><span class="line">  TCP_REG(&amp;tcp_listen_pcbs.pcbs, (struct tcp_pcb *)lpcb);//链表中加入节点</span><br><span class="line">  return (struct tcp_pcb *)lpcb;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a>总结</h2><p><code>tcp_listen()</code>先申请一个<code>tcp_pcb_listen</code>的结构，然后将PCB参数中的有用字段拷贝进来，然后将这个PCB的结构挂接到链表<code>tcp_listen_pcbs</code>上。</p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>本文讲了<code>tcp_new</code> <code>tcp_bind</code> <code>tcp_listen</code>函数的实现，下篇讲述LwIP中TCP的输入输出函数。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/TCP-IP/" rel="tag"># TCP/IP</a>
+              <a href="/tags/LwIP/" rel="tag"># LwIP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+                <a href="/2019/11/05/20191105Markdown-%E9%AB%98%E7%BA%A7%E8%AF%AD%E6%B3%95/" rel="next" title="Markdown 高级语法">
+                  <i class="fa fa-chevron-left"></i> Markdown 高级语法
+                </a>
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+                <a href="/2020/03/16/Python%E8%AF%AD%E6%B3%95%E5%AD%A6%E4%B9%A0%E9%A1%B9%E7%9B%AE/" rel="prev" title="Python语法学习项目">
+                  Python语法学习项目 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LwIP介绍"><span class="nav-number">1.</span> <span class="nav-text">LwIP介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目的"><span class="nav-number">1.1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#区别"><span class="nav-number">1.2.</span> <span class="nav-text">区别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP功能"><span class="nav-number">2.</span> <span class="nav-text">TCP功能</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tcp-new"><span class="nav-number">3.</span> <span class="nav-text">tcp_new</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#函数功能"><span class="nav-number">3.1.</span> <span class="nav-text">函数功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数源码"><span class="nav-number">3.2.</span> <span class="nav-text">函数源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tcp-alloc"><span class="nav-number">3.3.</span> <span class="nav-text">tcp_alloc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数功能-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">函数功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#函数源码-1"><span class="nav-number">3.3.2.</span> <span class="nav-text">函数源码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tcp-bind"><span class="nav-number">4.</span> <span class="nav-text">tcp_bind</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#函数功能-2"><span class="nav-number">4.1.</span> <span class="nav-text">函数功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数源码-2"><span class="nav-number">4.2.</span> <span class="nav-text">函数源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结-1"><span class="nav-number">4.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TCP的状态机"><span class="nav-number">5.</span> <span class="nav-text">TCP的状态机</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP连接与断开状态"><span class="nav-number">5.1.</span> <span class="nav-text">TCP连接与断开状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP其他状态迁移"><span class="nav-number">5.2.</span> <span class="nav-text">TCP其他状态迁移</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">5.3.</span> <span class="nav-text">附录</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tcp-listen"><span class="nav-number">6.</span> <span class="nav-text">tcp_listen</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#函数功能-3"><span class="nav-number">6.1.</span> <span class="nav-text">函数功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数源码-3"><span class="nav-number">6.2.</span> <span class="nav-text">函数源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结-2"><span class="nav-number">6.3.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结语"><span class="nav-number">7.</span> <span class="nav-text">结语</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <img class="site-author-image" itemprop="image" alt="钱晓豪"
+    src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">钱晓豪</p>
+  <div class="site-description" itemprop="description">这是一枚xx想要坚持下去的博客<br>邮箱：1510879435@qq.com</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiaohaoQian" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;xiaohaoQian" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">钱晓豪</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'f7154f4c860569b0c350',
+      clientSecret: '0f911ab3cb89d8eda9872e94b3b3eac15ebe94f7',
+      repo: 'xiaohaoQian.github.io',
+      owner: 'xiaohaoQian',
+      admin: ['xiaohaoQian'],
+      id: '2554637da525477debcf8867c7655f4e',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+</body>
+</html>
